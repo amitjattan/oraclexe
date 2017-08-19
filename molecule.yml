@@ -1,0 +1,18 @@
+---
+driver:
+  name: docker
+docker:
+  containers:
+    - name: oraclexe
+      image: oraclelinux
+      image_version: 7-slim
+      ansible_groups:
+        - group1
+verifier:
+  name: testinfra
+molecule:
+  ignore_paths:
+    - .git
+    - .vagrant
+    - .molecule
+    - venv
