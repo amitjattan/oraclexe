@@ -14,6 +14,8 @@ Using the following tools to develop:
 - molecule
 - docker
 
+You will need to download the following file from Oracle and place it in this directory: oracle-xe-11.2.0-1.0.x86_64.rpm.zip
+
 
 Role Variables
 --------------

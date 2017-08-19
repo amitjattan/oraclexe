@@ -1,2 +1,19 @@
 ---
 # defaults file for oraclexe
+
+oracle_user: 'oracle'
+oracle_group: 'dba'
+oracle_pwd: 'heLLo1234.'
+
+oracle_base: '/u01/app/oracle'
+oracle_scripts: "{{ oracle_base }}/scripts"
+oracle_home: "{{ oracle_base }}/product/11.2.0/xe"
+oracle_sid: 'XE'
+yum_package: 'oracle-xe-11.2.0-1.0.x86_64'
+install_rpmfile: "{{ yum_package}}.rpm"
+install_file_1: "{{ install_rpmfile }}.zip"
+install_dir: "/home/{{ oracle_user }}/install"
+config_rsp: 'xe.rsp'
+run_file: 'runOracle.sh'
+pwd_file: 'setPassword.sh'
+

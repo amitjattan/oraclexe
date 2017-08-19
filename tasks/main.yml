@@ -1,2 +1,157 @@
 ---
 # tasks file for oraclexe
+
+- name: Ensure OS packages are installed
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - unzip
+    - libaio
+    - bc
+    - initscripts
+    - net-tools
+    - openssl
+  become: true
+
+- name: "Create ({{ oracle_group }}) group"
+  group:
+    name: "{{ oracle_group }}"
+    state: present
+  become: true
+
+- name: "Create ({{ oracle_user }}) user"
+  user:
+    name: "{{ oracle_user }}"
+    state: present
+    groups: "{{ oracle_group }}"
+  become: true
+
+- name: See if we have the rpm package installed
+  shell: 'rpm -q oracle-xe'
+  args:
+    warn: no
+  register: oracle_xe_rpm_installed
+  failed_when: oracle_xe_rpm_installed.rc != 0 and oracle_xe_rpm_installed.rc != 1
+  changed_when: false
+  become: true
+
+# Note: Only create the tmp installation directory if we do not have the rpm installed.
+- name: "Create ({{ install_dir }}) installation directory"
+  file:
+    path: "{{ install_dir }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  become: true
+  when: oracle_xe_rpm_installed.rc == 1
+
+- name: Add ORACLE_HOME/bin dir to PATH
+  lineinfile:
+    dest: "/home/{{ oracle_user }}/.bashrc"
+    regexp: "^export PATH.*{{ oracle_home }}/bin"
+    line: "export PATH=$PATH:{{ oracle_home }}/bin"
+  become: true
+  when: oracle_xe_rpm_installed.rc == 1
+
+- name: Copy the installer
+  copy:
+    src: "{{ install_file_1 }}"
+    dest: "{{ install_dir }}/{{ install_file_1 }}"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  become: true
+  when: oracle_xe_rpm_installed.rc == 1
+
+- name: Unarchive the installer
+  unarchive:
+    src: "{{ install_dir }}/{{ install_file_1 }}"
+    dest: "{{ install_dir }}"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    creates: "{{ install_dir }}/Disk1/{{ install_rpmfile }}"
+    remote_src: true
+  become: true
+  when: oracle_xe_rpm_installed.rc == 1
+
+- name: Install the rpm
+  yum:
+    name: "{{ install_dir }}/Disk1/{{ install_rpmfile }}"
+    state: present
+  become: true
+  when: oracle_xe_rpm_installed.rc == 1
+
+- name: "Remove ({{ install_dir }}) installation directory"
+  file:
+    path: "{{ install_dir }}"
+    state: absent
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  become: true
+
+- name: "Create ({{ oracle_scripts }}) directory"
+  file:
+    path: "{{ oracle_scripts }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  become: true
+
+- name: "Create ({{ oracle_scripts }}/setup) directory"
+  file:
+    path: "{{ oracle_scripts }}/setup"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  become: true
+
+- name: "Create ({{ oracle_scripts }}/startup) directory"
+  file:
+    path: "{{ oracle_scripts }}/startup"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  become: true
+
+- name: "Create ({{ oracle_base }}/oradata) directory"
+  file:
+    path: "{{ oracle_base }}/oradata"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  become: true
+
+- name: "Ensure ({{ oracle_base }} perms are ({{ oracle_user }}:{{ oracle_group }}"
+  file:
+    path: "{{ oracle_base }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    recurse: yes
+  become: true
+
+- name: Create the silent response file
+  template:
+    src: xe.rsp.j2
+    dest: "{{ oracle_base }}/xe.rsp"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+  become: true
+
+- name: Create the runOracle.sh file
+  template:
+    src: runOracle.sh.j2
+    dest: "{{ oracle_base }}/runOracle.sh"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    mode: '0755'
+  become: true
+
+- name: Create the setPassword.sh file
+  template:
+    src: setPassword.sh.j2
+    dest: "{{ oracle_base }}/setPassword.sh"
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    mode: '0755'
+  become: true
