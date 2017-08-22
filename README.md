@@ -44,9 +44,12 @@ This role was created using:
 
 Then the following commands were run:
 
+    virtualenv venv
+    source venv/bin/activate
     pip install ansible
     pip install molecule
     pip install docker
+    pip freeze > requirements.txt
     molecule test
 
 
