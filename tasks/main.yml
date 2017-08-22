@@ -14,6 +14,16 @@
     - openssl
   become: true
 
+# There is not a size option to ansible mount module. So, just using shell.
+# Note; This should be "tuned".
+- name: Tune shared memory
+  shell: mount -t tmpfs shmfs -o size=2g /dev/shm
+  args:
+    warn: false # to disable '[WARNING]: Consider using mount module rather than running mount'
+  become: true
+  changed_when: false
+  tags: skip_ansible_lint
+
 - name: "Create ({{ oracle_group }}) group"
   group:
     name: "{{ oracle_group }}"
@@ -134,7 +144,7 @@
 - name: Create the silent response file
   template:
     src: xe.rsp.j2
-    dest: "{{ oracle_base }}/xe.rsp"
+    dest: "{{ oracle_response_file }}"
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
   become: true
@@ -155,4 +165,20 @@
     owner: "{{ oracle_user }}"
     group: "{{ oracle_group }}"
     mode: '0755'
+  become: true
+
+- name: Run initial command
+  shell: /u01/app/oracle/runOracle.sh
+  become: true
+  changed_when: false
+  tags: skip_ansible_lint
+
+# Note: Fix perms after running the initial command
+- name: "Ensure ({{ oracle_base }} perms are ({{ oracle_user }}:{{ oracle_group }} - second pass"
+  file:
+    path: "{{ oracle_base }}"
+    state: directory
+    owner: "{{ oracle_user }}"
+    group: "{{ oracle_group }}"
+    recurse: yes
   become: true

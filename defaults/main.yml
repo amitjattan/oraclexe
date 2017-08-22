@@ -13,7 +13,6 @@ yum_package: 'oracle-xe-11.2.0-1.0.x86_64'
 install_rpmfile: "{{ yum_package}}.rpm"
 install_file_1: "{{ install_rpmfile }}.zip"
 install_dir: "/home/{{ oracle_user }}/install"
-config_rsp: 'xe.rsp'
+oracle_response_file: "{{ oracle_base }}/xe.rsp"
 run_file: 'runOracle.sh'
 pwd_file: 'setPassword.sh'
-

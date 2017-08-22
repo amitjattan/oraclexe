@@ -1,17 +1,36 @@
 ---
-driver:
-  name: docker
+# Unfortunately, I cannot figure out how to change shared memory on docker
+# via molecule. So, going to switch to using vagrant.
+#driver:
+  #name: docker
   #run_options: "--shm-size=1G"
-docker:
-  containers:
-    - name: oraclexe
-      image: oraclelinux
-      image_version: 7-slim
-      ansible_groups:
-        - group1
+#docker:
+  #containers:
+    #- name: oraclexe
+    #  image: oraclelinux
+    #  image_version: 7-slim
+    #  ansible_groups:
+    #    - group1
       #privileged: True
       #port_bindings:
       #  80: 80
+driver:
+  name: vagrant
+vagrant:
+  platforms:
+    - name: centos73
+      box: centos73
+      #box_url: https://vagrantcloud.com/ubuntu/boxes/trusty64/versions/14.04/providers/virtualbox.box
+  providers:
+    - name: vmware_fusion
+      type: vmware_fusion
+      options:
+        memory: 2048
+        cpus: 2
+  instances:
+    - name: oraclexe
+      ansible_groups:
+        - group1
 verifier:
   name: testinfra
 molecule:

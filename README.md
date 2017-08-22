@@ -12,7 +12,8 @@ Using the following tools to develop:
 - virtualenv
 - pip
 - molecule
-- docker
+- docker (temp switched to vagrant until I can figure out the shared memory issue)
+- vagrant
 
 You will need to download the following file from Oracle and place it in this directory: oracle-xe-11.2.0-1.0.x86_64.rpm.zip
 
@@ -49,6 +50,7 @@ Then the following commands were run:
     pip install ansible
     pip install molecule
     pip install docker
+    pip install python-vagrant
     pip freeze > requirements.txt
     molecule test
 
